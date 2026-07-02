@@ -2,6 +2,8 @@ import { getBucket } from "../services/bucketStore.js";
 import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_REFILL_RATE,
+  RATE_LIMIT_HEADERS,
+  HTTP_STATUS,
 } from "../config/constants.js";
 
 function rateLimit({ maxTokens = DEFAULT_MAX_TOKENS, refillRate = DEFAULT_REFILL_RATE, keyGenerator } = {}) {
@@ -12,13 +14,13 @@ function rateLimit({ maxTokens = DEFAULT_MAX_TOKENS, refillRate = DEFAULT_REFILL
 
     const { allowed, tokensRemaining } = bucket.tryConsume(1);
 
-    res.set("X-RateLimit-Limit", maxTokens);
-    res.set("X-RateLimit-Remaining", Math.floor(tokensRemaining));
+    res.set(RATE_LIMIT_HEADERS.LIMIT, maxTokens);
+    res.set(RATE_LIMIT_HEADERS.REMAINING, Math.floor(tokensRemaining));
 
     if (!allowed) {
-      res.set("Retry-After", "1");
+      res.set(RATE_LIMIT_HEADERS.RETRY_AFTER, "1");
 
-      return res.status(429).json({
+      return res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
         success: false,
         message: "Rate limit exceeded. Please try again later.",
         retryAfter: 1,
