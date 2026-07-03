@@ -1,33 +1,42 @@
-import { getBucket } from "../services/bucketStore.js";
+import { consume } from "../services/redisTokenBucket.js";
 import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_REFILL_RATE,
-  RATE_LIMIT_HEADERS,
-  HTTP_STATUS,
 } from "../config/constants.js";
 
-function rateLimit({ maxTokens = DEFAULT_MAX_TOKENS, refillRate = DEFAULT_REFILL_RATE, keyGenerator } = {}) {
-  return (req, res, next) => {
-    const identifier = keyGenerator ? keyGenerator(req) : req.ip;
+function rateLimit({
+  maxTokens = DEFAULT_MAX_TOKENS,
+  refillRate = DEFAULT_REFILL_RATE,
+  keyGenerator,
+} = {}) {
+  return async (req, res, next) => {
+    try {
+      const identifier = keyGenerator ? keyGenerator(req) : req.ip;
 
-    const bucket = getBucket(identifier, maxTokens, refillRate);
+      const bucketKey = `ratelimit:${req.baseUrl}${req.path}:${identifier}`;
 
-    const { allowed, tokensRemaining } = bucket.tryConsume(1);
-
-    res.set(RATE_LIMIT_HEADERS.LIMIT, maxTokens);
-    res.set(RATE_LIMIT_HEADERS.REMAINING, Math.floor(tokensRemaining));
-
-    if (!allowed) {
-      res.set(RATE_LIMIT_HEADERS.RETRY_AFTER, "1");
-
-      return res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
-        success: false,
-        message: "Rate limit exceeded. Please try again later.",
-        retryAfter: 1,
+      const { allowed, tokensRemaining } = await consume(bucketKey, {
+        maxTokens,
+        refillRate,
       });
-    }
 
-    next();
+      res.set("X-RateLimit-Limit", maxTokens);
+      res.set("X-RateLimit-Remaining", Math.floor(tokensRemaining));
+
+      if (!allowed) {
+        res.set("Retry-After", "1");
+
+        return res.status(429).json({
+          success: false,
+          message: "Rate limit exceeded. Please try again later.",
+          retryAfter: 1,
+        });
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
   };
 }
 

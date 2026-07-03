@@ -20,7 +20,7 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("Token Bucket Rate Limiter - Phase 1 (In-Memory)");
+  res.send("Token Bucket Rate Limiter - Redis Integration");
 });
 
 export default app;
