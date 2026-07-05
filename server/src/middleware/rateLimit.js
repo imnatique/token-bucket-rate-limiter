@@ -1,10 +1,14 @@
 import { consume } from "../services/redisTokenBucket.js";
 import {
+  incrementAllowedRequests,
+  incrementBlockedRequests,
+} from "../services/monitoringService.js";
+import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_REFILL_RATE,
 } from "../config/constants.js";
 
-function rateLimit({
+export function rateLimit({
   maxTokens = DEFAULT_MAX_TOKENS,
   refillRate = DEFAULT_REFILL_RATE,
   keyGenerator,
@@ -20,10 +24,12 @@ function rateLimit({
         refillRate,
       });
 
-      res.set("X-RateLimit-Limit", maxTokens);
-      res.set("X-RateLimit-Remaining", Math.floor(tokensRemaining));
+      res.set("X-RateLimit-Limit", String(maxTokens));
+      res.set("X-RateLimit-Remaining", String(Math.floor(tokensRemaining)));
 
       if (!allowed) {
+        await incrementBlockedRequests();
+
         res.set("Retry-After", "1");
 
         return res.status(429).json({
@@ -33,11 +39,11 @@ function rateLimit({
         });
       }
 
+      await incrementAllowedRequests();
+
       next();
     } catch (error) {
       next(error);
     }
   };
 }
-
-export default rateLimit;
