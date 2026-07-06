@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://token-bucket-rate-limiter-ml4c.onrender.com/api",
 });
