@@ -140,7 +140,7 @@ docker compose up -d
 ## Live Demo
 
 
-[Token Bucket Rate Limiter](https://token-bucket-rate-limiter.vercel.app/)
+[Token Bucket Rate Limiter](https://token-bucket-rate-limiter.vercel.app)
 
 ---
 
