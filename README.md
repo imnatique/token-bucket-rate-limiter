@@ -139,13 +139,8 @@ docker compose up -d
 
 ## Live Demo
 
-**Frontend**
 
-[Frontend URL](https://token-bucket-rate-limiter.vercel.app/)
-
-**Backend**
-
-[Backend URL](https://token-bucket-rate-limiter-ml4c.onrender.com)
+[Token Bucket Rate Limiter](https://token-bucket-rate-limiter.vercel.app/)
 
 ---
 
