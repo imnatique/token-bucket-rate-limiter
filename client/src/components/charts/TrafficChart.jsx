@@ -28,11 +28,28 @@ export function TrafficChart({ history = [] }) {
             <LineChart data={history}>
               <CartesianGrid strokeDasharray="3 3" />
 
-              <XAxis dataKey="time" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })
+                }
+              />
 
               <YAxis />
 
-              <Tooltip />
+              <Tooltip
+                labelFormatter={(value) =>
+                  new Date(value).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })
+                }
+              />
 
               <Legend />
 

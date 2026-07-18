@@ -38,7 +38,7 @@ export async function getStats() {
     lastEntry.blocked !== blockedRequests
   ) {
     trafficHistory.push({
-      time: new Date().toLocaleTimeString(),
+      timestamp: Date.now(),
       allowed: allowedRequests,
       blocked: blockedRequests,
     });
